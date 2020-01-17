@@ -3,7 +3,7 @@ public with sharing class COMTestRecordBuilder {
 
     //#region objectbased fields and relationships
     private Map<Schema.SObjectField, Schema.DescribeFieldResult> fieldToDescribe;
-    private Map<Schema.DescribeFieldResul, Object> serializedSObjFields;
+    private Map<Schema.DescribeFieldResult, Object> serializedSObjFields;
 
     private Map<String, List<SObject>> relationNameToChildren;
     private Map<Schema.ChildRelationship, Map<Schema.SObjectField, Object>> serializedSObjRelations;
@@ -19,7 +19,6 @@ public with sharing class COMTestRecordBuilder {
         
         serializedSObjFields = serializeSObjectFields(sObj);
 
-
         relNameToRelationship = new Map<String, Schema.ChildRelationship>();
         for(Schema.ChildRelationship rel : serializedSObjRelations.keySet()){
             relNameToRelationship.put(rel.getRelationshipName(), rel);
@@ -27,43 +26,54 @@ public with sharing class COMTestRecordBuilder {
     }
 
     public COMTestRecordBuilder updateField(Schema.SObjectField field, Object value){
-        if(serializedSObjFields.containsKey(field)){
-            objFields.put(field, value);
+        if(fieldToDescribe.containsKey(field)){
+            serializedSObjFields.put(fieldToDescribe.get(field), value);
         }
+        return this;
     }
 
     public COMTestRecordBuilder insertChildrenRelationShip(String relationshipName, List<SObject> children){
         relationNameToChildren.put(relationshipName, children);
+        return this;
     }
     
     public sObject serialize(){
         
-        Map<String, Object> objectFields = new Map<String, Object>();
-        for(Schema.SObjectField field : serializedSObjFields.keySet()){
-            String fieldName = fieldToDescribe.get(field).name;
-            objectFields.put(fieldName, serializedSObjFields.get(field));
+        Map<String, Object> finalFieldMap = new Map<String, Object>();
+
+        for(Schema.SObjectField field : fieldToDescribe.keySet()){
+            Schema.DescribeFieldResult fieldDescr = fieldToDescribe.get(field);
+            String fieldName = fieldDescr.name;
+            finalFieldMap.put(fieldName, fieldDescr);
         }
         
-        for(String keys : relationNameToChildren.keySet()){
-            
+        for(String relName : relationNameToChildren.keySet()){
+            List<Map<String, Object>> childrenFields = new List<Map<String, Object>>();
+            List<SObject> children = relationNameToChildren.get(relName);
+
+            for(SObject sobj : children){
+                childrenFields.add((Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(sobj)));
+            }
 
             Map<String,Object> childRelations = new Map<String, Object>();
             childRelations.put('done', true);
             childRelations.put('totalSize', childrenFields.size());
             childRelations.put('records', childrenFields);
-            fields.put(relationshipName, childRelations);
+
+
+            finalFieldMap.put(relName, childRelations);
         }
 
-        return (SObject)JSON.deserialize(JSON.serialize(fields), sObjType);
+        return (SObject)JSON.deserialize(JSON.serialize(finalFieldMap), sObjType);
     }
 
-    private Map<Schema.SObjectField, Object> serializeSObjectFields(SObject sObj){
+    private Map<Schema.DescribeFieldResult, Object> serializeSObjectFields(SObject sObj){
         Schema.DescribeSObjectResult objectDescribe = sObj.getSObjectType().GetDescribe();
         Map<String, Object> rawFields = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(sObj));
 
         Map<String, Object> rawFieldValues = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(sObj));
 
-        Map<Schema.SObjectField, Object> objectFields = new Map<Schema.SObjectField, Object>();
+        Map<Schema.DescribeFieldResult, Object> objectFields = new Map<Schema.DescribeFieldResult, Object>();
         for(Schema.SObjectField fld : objectDescribe.fields.getMap().values()){
             Schema.DescribeFieldResult dfr = fld.getDescribe();
             if(rawFields.containsKey(dfr.Name)){
@@ -90,7 +100,7 @@ public with sharing class COMTestRecordBuilder {
 
                 DescribeFieldResult dfr = fld.getDescribe();
                 if(rawFields.containsKey(dfr.Name)){
-                    fieldToValueMap.put(dfr, rawFields.get(dfr.Name));
+                    fieldToValueMap.put(fld, rawFields.get(dfr.Name));
                 }
             }
 
@@ -99,31 +109,3 @@ public with sharing class COMTestRecordBuilder {
         return relationshipToFields;
     }
 }
-
-
-/*
-//#region Anonymous debug
-sObject acc = [SELECT Id, Name, (SELECT ID FROM Contacts) FROM Account WHERE Id = '0016E00000usZtiQAE'];
-System.debug('Record: ' + acc);
-
-Map<String, Object> childrenRels = new Map<String, Object>();
-Map<String, Object> rawFields = new Map<String, Object>();
-Map<String, Object> fields = new Map<String, Object>();
-Map<Schema.ChildRelationship, Object> objRelations = new Map<Schema.ChildRelationship, Object>();
-
-Schema.DescribeSObjectResult objectDescribe = acc.getSObjectType().GetDescribe();
-rawFields = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(acc));
-Type sObjType = Type.forName(objectDescribe.getName());
-
-for(Schema.ChildRelationship r : objectDescribe.getChildRelationships()){
-            String relName = r.getRelationshipName();
-            childrenRels.put(relName, rawFields.get(relName));
-            objRelations.put(r, rawFields.get(relName));
-            Map<String, Object> childRelData;
-        }
-
-System.Debug(childrenRels);
-
-
-//#endregion
-*/
