@@ -1,0 +1,7 @@
+sObject acc = [SELECT Id, Name FROM Account LIMIT 1];
+
+COMTestRecordBuilder accBuilder = new COMTestRecordBuilder(acc);
+accBuilder.updateField('Name', 'Pupkin Inc.');
+
+Account a1 = (Account)accBuilder.serialize();
+System.Debug(a1.Name);
