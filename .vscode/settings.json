@@ -1,5 +1,4 @@
 {
-    "eslint.nodePath": "c:\\Users\\dyelchaninov\\.vscode\\extensions\\salesforce.salesforcedx-vscode-lwc-47.15.0\\node_modules",
     "files.exclude": {
         "**/*.cls-meta.xml": true
     }

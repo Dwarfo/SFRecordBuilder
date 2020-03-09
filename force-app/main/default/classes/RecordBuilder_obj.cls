@@ -1,4 +1,4 @@
-public with sharing class COMTestRecordBuilder {
+public with sharing class RecordBuilder_obj {
     private Type sObjType;
 
     //#region objectbased fields and relationships
@@ -11,11 +11,11 @@ public with sharing class COMTestRecordBuilder {
 
     //#endregion
 
-    public COMTestRecordBuilder(Type sObjType) {
+    public RecordBuilder_obj(Type sObjType) {
         this.sObjType = sObjType;
     }
 
-    public COMTestRecordBuilder(SObject sObj){
+    public RecordBuilder_obj(SObject sObj){
         
         serializedSObjFields = serializeSObjectFields(sObj);
 
@@ -25,14 +25,14 @@ public with sharing class COMTestRecordBuilder {
         }
     }
 
-    public COMTestRecordBuilder updateField(Schema.SObjectField field, Object value){
+    public RecordBuilder_obj updateField(Schema.SObjectField field, Object value){
         if(fieldToDescribe.containsKey(field)){
             serializedSObjFields.put(fieldToDescribe.get(field), value);
         }
         return this;
     }
 
-    public COMTestRecordBuilder insertChildrenRelationShip(String relationshipName, List<SObject> children){
+    public RecordBuilder_obj insertChildrenRelationShip(String relationshipName, List<SObject> children){
         relationNameToChildren.put(relationshipName, children);
         return this;
     }
