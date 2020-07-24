@@ -1,8 +1,9 @@
 # SFRecordBuilder
-RecordBuilder for creating records used in testing classes, ommiting "readOnly" and other notations.
-Has 2 variations: 
+RecordBuilder for creating records used in testing classes, ommiting security settings, validations and other functionality not in scope of test. Can populate child relationships, fields in parent relationships and update fields in records.
+
+RecordBuilder has 2 variations: 
   1. String based: As 1st argument in methods requires field name as string 
-  2. Schema based: As 1st argument in methods requies Schema.SObjectField object of specific field.
+  2. Schema based: As 1st argument in methods requies Schema.SObjectField object of specific field __(Untested)__.
   
 ## Methods and constructors (string based)
 Described methods ommit any kind of validations and security settings, because internally they work on String/Object maps instead of actual sObject records. All methods return the instance of record builder, that they belong to (this).
