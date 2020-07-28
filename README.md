@@ -1,4 +1,4 @@
-# SFRecordBuilder
+# SFTestingTools
 RecordBuilder for creating records used in testing classes, ommiting security settings, validations and other functionality not in scope of test. Can populate child relationships, fields in parent relationships and update fields in records.
 
 RecordBuilder has 2 variations: 
